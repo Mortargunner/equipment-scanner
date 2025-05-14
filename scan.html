@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장비 QR 스캔</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .status {
+            font-size: 18px;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb;
+        }
+        .error { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb;
+        }
+        .processing {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d3d6d8;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏷️ 장비 QR 스캔</h1>
+        <div id="status" class="status processing">
+            <div class="spinner"></div>
+            처리 중입니다...
+        </div>
+        <div id="equipment-info" style="display: none;">
+            <h3>📦 장비 정보</h3>
+            <p><strong>장비 ID:</strong> <span id="equipment-id"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // URL에서 장비 ID 추출
+        function getEquipmentId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // 상태 업데이트 함수
+        function updateStatus(message, type = 'processing') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status ' + type;
+            statusDiv.innerHTML = message;
+        }
+
+        // 장비 정보 표시
+        function showEquipmentInfo(equipmentId) {
+            document.getElementById('equipment-id').textContent = equipmentId;
+            document.getElementById('equipment-info').style.display = 'block';
+        }
+
+        // Make.com 웹훅 호출
+        async function processEquipmentScan() {
+            const equipmentId = getEquipmentId();
+            
+            if (!equipmentId) {
+                updateStatus('❌ 장비 ID를 찾을 수 없습니다.<br><small>QR 코드를 다시 스캔해주세요.</small>', 'error');
+                return;
+            }
+
+            showEquipmentInfo(equipmentId);
+            updateStatus('🔄 장비 정보를 처리하고 있습니다...', 'processing');
+
+            try {
+                // TODO: 여기에 실제 Make.com 웹훅 URL 입력 필요
+                const webhookUrl = 'https://hook.make.com/YOUR_WEBHOOK_URL_HERE';
+                
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        equipment_id: equipmentId,
+                        scan_timestamp: new Date().toISOString(),
+                        user_agent: navigator.userAgent,
+                        source: 'qr_scan',
+                        page_url: window.location.href
+                    })
+                });
+
+                if (response.ok) {
+                    updateStatus('✅ 스캔 완료!<br>💡 인수인계 페이지가 Notion에 생성되었습니다.<br><small>담당자가 확인 후 연락드릴 예정입니다.</small>', 'success');
+                } else {
+                    throw new Error(`서버 오류 (${response.status})`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus(`❌ 처리 중 오류가 발생했습니다.<br><small>${error.message}</small><br><button onclick="window.location.reload()">🔄 다시 시도</button>`, 'error');
+            }
+        }
+
+        // 페이지 로드시 자동 실행
+        window.addEventListener('load', processEquipmentScan);
+    </script>
+</body>
+</html>
