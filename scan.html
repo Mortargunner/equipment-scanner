@@ -25,20 +25,40 @@
             border-radius: 8px;
             margin: 15px 0;
         }
-        .checklist-section {
+        .form-section {
             margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
         }
         .checklist-section label {
             display: block;
             margin: 10px 0;
             font-size: 16px;
+            font-weight: normal;
         }
         .checklist-section input[type="checkbox"] {
             margin-right: 10px;
             transform: scale(1.2);
-        }
-        .photo-section, .memo-section {
-            margin: 20px 0;
         }
         textarea {
             width: 100%;
@@ -48,10 +68,50 @@
             border-radius: 5px;
             resize: vertical;
         }
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
+        .photo-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .photo-upload-area:hover {
+            border-color: #007bff;
+        }
+        .photo-preview {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .signature-canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: crosshair;
+            background: white;
+        }
+        .signature-controls {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .signature-controls button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .signature-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
             margin: 10px 0;
+            background: #fafafa;
         }
         .complete-btn {
             width: 100%;
@@ -86,6 +146,11 @@
         }
         .success { color: #28a745; }
         .error { color: #dc3545; }
+        .required { color: #e74c3c; }
+        .readonly {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -98,7 +163,7 @@
 
     <!-- 2단계: 인수인계 폼 -->
     <div id="handover-form" class="screen hidden">
-        <h2 id="form-title">📋 장비 대여 인계서</h2>
+        <h2 id="form-title">📋 장비 대여 반출 확인서</h2>
         
         <!-- 장비 정보 -->
         <div class="equipment-info">
@@ -109,47 +174,123 @@
             <p><strong>현재 상태:</strong> <span id="equipment-status">-</span></p>
         </div>
         
+        <!-- 대여 신청 정보 (읽기 전용) -->
+        <div class="form-section">
+            <h3>👤 대여 신청 정보</h3>
+            <div class="input-group">
+                <label>대여 신청자</label>
+                <input type="text" id="applicant-name" class="readonly" readonly value="홍길동">
+            </div>
+            <div class="input-group">
+                <label>신청자 소속</label>
+                <input type="text" id="applicant-department" class="readonly" readonly value="개발팀">
+            </div>
+            <div class="input-group">
+                <label>대여 신청일</label>
+                <input type="text" id="application-date" class="readonly" readonly value="2025-05-14">
+            </div>
+        </div>
+        
+        <!-- 실제 반출 정보 -->
+        <div class="form-section">
+            <h3>🚚 실제 반출 정보</h3>
+            <div class="input-group">
+                <label for="actual-borrower">실제 반출자 <span class="required">*</span></label>
+                <input type="text" id="actual-borrower" required placeholder="실제 반출자 이름을 입력하세요">
+            </div>
+            <div class="input-group">
+                <label for="checkout-manager">반출 확인 담당자 <span class="required">*</span></label>
+                <input type="text" id="checkout-manager" required placeholder="반출 확인 담당자 이름을 입력하세요">
+            </div>
+            <div class="input-group">
+                <label for="checkout-datetime">반출 일시 <span class="required">*</span></label>
+                <input type="datetime-local" id="checkout-datetime" required>
+            </div>
+        </div>
+        
         <!-- 점검 체크리스트 -->
-        <div class="checklist-section">
-            <h3>✅ 점검 사항</h3>
+        <div class="form-section checklist-section">
+            <h3>✅ 대여 전 점검 사항</h3>
             <label><input type="checkbox" id="check-appearance"> 외관 상태 양호</label>
             <label><input type="checkbox" id="check-function"> 동작 정상 확인</label>
             <label><input type="checkbox" id="check-accessories"> 액세서리 완전</label>
             <label><input type="checkbox" id="check-manual"> 설명서 포함</label>
         </div>
         
-        <!-- 사진 업로드 -->
-        <div class="photo-section">
-            <h3>📸 사진 기록</h3>
-            <input type="file" id="photo-upload" accept="image/*" capture="environment">
-            <div id="photo-preview"></div>
+        <!-- 대여 전 사진 -->
+        <div class="form-section">
+            <h3>📸 대여 전 사진</h3>
+            <div class="photo-upload-area" onclick="document.getElementById('photo-upload').click()">
+                <p>📷 사진 촬영하기</p>
+                <small>클릭하여 카메라를 사용하거나 사진을 선택하세요</small>
+            </div>
+            <input type="file" id="photo-upload" accept="image/*" capture="environment" style="display: none;">
+            <div class="photo-preview" id="photo-preview"></div>
+        </div>
+        
+        <!-- 서명 섹션 -->
+        <div class="form-section">
+            <h3>✍️ 서명 확인</h3>
+            
+            <!-- 실제 반출자 서명 -->
+            <div class="signature-section">
+                <h4>📝 실제 반출자 서명 <span class="required">*</span></h4>
+                <canvas id="borrower-signature-canvas" class="signature-canvas" width="530" height="120"></canvas>
+                <div class="signature-controls">
+                    <button type="button" onclick="clearSignature('borrower')">🗑️ 지우기</button>
+                    <button type="button" onclick="saveSignature('borrower')">💾 저장</button>
+                </div>
+                <div id="borrower-signature-preview" class="hidden">
+                    <p>✅ 반출자 서명이 저장되었습니다</p>
+                </div>
+            </div>
+            
+            <!-- 반출 확인 담당자 서명 -->
+            <div class="signature-section">
+                <h4>📝 반출 확인 담당자 서명 <span class="required">*</span></h4>
+                <canvas id="manager-signature-canvas" class="signature-canvas" width="530" height="120"></canvas>
+                <div class="signature-controls">
+                    <button type="button" onclick="clearSignature('manager')">🗑️ 지우기</button>
+                    <button type="button" onclick="saveSignature('manager')">💾 저장</button>
+                </div>
+                <div id="manager-signature-preview" class="hidden">
+                    <p>✅ 담당자 서명이 저장되었습니다</p>
+                </div>
+            </div>
         </div>
         
         <!-- 특이사항 메모 -->
-        <div class="memo-section">
+        <div class="form-section">
             <h3>💬 특이사항</h3>
             <textarea id="memo-text" placeholder="특이사항을 입력하세요..."></textarea>
         </div>
         
         <!-- 완료 버튼 -->
         <button id="complete-handover" class="complete-btn">
-            <span id="complete-btn-text">✅ 대여 완료</span>
+            <span id="complete-btn-text">✅ 반출 완료</span>
         </button>
     </div>
 
     <!-- 3단계: 완료 화면 -->
     <div id="completion-screen" class="screen hidden">
-        <h2 class="success">✅ 인수인계 완료!</h2>
+        <h2 class="success">✅ 반출 완료!</h2>
         <p>성공적으로 처리되었습니다.</p>
-        <p>Notion에서 인수인계 기록을 확인할 수 있습니다.</p>
+        <p>Notion에서 반출 기록을 확인할 수 있습니다.</p>
     </div>
 
     <script>
-        // 웹훅 URL 설정 (1단계에서 복사한 URL로 교체)
+        // 웹훅 URL 설정
         const EQUIPMENT_INFO_WEBHOOK = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
         const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae';
         
         let currentEquipmentData = null;
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentPhoto = null;
+        let borrowerSignature = null;
+        let managerSignature = null;
+        let activeCanvas = null;
 
         // URL에서 장비 ID 추출
         function getEquipmentId() {
@@ -201,6 +342,29 @@
             if (data.status === '장비 대여중') {
                 document.getElementById('form-title').textContent = '📋 장비 반납 접수서';
                 document.getElementById('complete-btn-text').textContent = '✅ 반납 완료';
+                // 대여신청 정보를 실제 대여자 정보로 변경
+                const sections = document.querySelectorAll('.form-section h3');
+                sections[1].textContent = '👤 대여자 정보';
+                const labels = document.querySelectorAll('.input-group label');
+                labels[0].textContent = '대여자';
+                labels[1].textContent = '대여자 소속';
+                labels[2].textContent = '대여일';
+                labels[3].textContent = '실제 반납자';
+                labels[4].textContent = '반납 확인 담당자';
+                labels[5].textContent = '반납 일시';
+                document.querySelector('.checklist-section h3').textContent = '✅ 반납 전 점검 사항';
+                document.querySelector('.form-section h3').textContent = '📸 반납 전 사진';
+            }
+            
+            // 신청 정보에 실제 데이터 표시 (Notion에서 가져온 경우)
+            if (data.applicant_name) {
+                document.getElementById('applicant-name').value = data.applicant_name;
+            }
+            if (data.applicant_department) {
+                document.getElementById('applicant-department').value = data.applicant_department;
+            }
+            if (data.application_date) {
+                document.getElementById('application-date').value = data.application_date;
             }
         }
 
@@ -208,6 +372,19 @@
         function showHandoverForm() {
             document.getElementById('loading-screen').classList.add('hidden');
             document.getElementById('handover-form').classList.remove('hidden');
+            initializeSignature();
+            setCurrentDateTime();
+        }
+
+        // 현재 날짜시간 설정
+        function setCurrentDateTime() {
+            const now = new Date();
+            const datetime = now.getFullYear() + '-' + 
+                           String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(now.getDate()).padStart(2, '0') + 'T' + 
+                           String(now.getHours()).padStart(2, '0') + ':' + 
+                           String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('checkout-datetime').value = datetime;
         }
 
         // 에러 표시
@@ -217,8 +394,149 @@
                  <button onclick="window.location.reload()" class="complete-btn">다시 시도</button>`;
         }
 
+        // 서명 캔버스 초기화
+        function initializeSignature() {
+            const canvases = ['borrower-signature-canvas', 'manager-signature-canvas'];
+            
+            canvases.forEach(canvasId => {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
+                
+                // 캔버스 설정
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                
+                // 이벤트 리스너 추가
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+                
+                // 터치 이벤트
+                canvas.addEventListener('touchstart', handleTouch);
+                canvas.addEventListener('touchmove', handleTouch);
+                canvas.addEventListener('touchend', stopDrawing);
+            });
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            activeCanvas = e.target;
+            [lastX, lastY] = getMousePos(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing || !activeCanvas) return;
+            
+            const ctx = activeCanvas.getContext('2d');
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            const [currentX, currentY] = getMousePos(e);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+            
+            [lastX, lastY] = [currentX, currentY];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            activeCanvas = null;
+        }
+
+        function getMousePos(e) {
+            const rect = e.target.getBoundingClientRect();
+            return [
+                e.clientX - rect.left,
+                e.clientY - rect.top
+            ];
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                            e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            e.target.dispatchEvent(mouseEvent);
+        }
+
+        function clearSignature(type) {
+            const canvas = document.getElementById(`${type}-signature-canvas`);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (type === 'borrower') {
+                borrowerSignature = null;
+            } else {
+                managerSignature = null;
+            }
+            
+            document.getElementById(`${type}-signature-preview`).classList.add('hidden');
+        }
+
+        function saveSignature(type) {
+            const canvas = document.getElementById(`${type}-signature-canvas`);
+            const signatureData = canvas.toDataURL('image/png');
+            
+            if (type === 'borrower') {
+                borrowerSignature = signatureData;
+            } else {
+                managerSignature = signatureData;
+            }
+            
+            document.getElementById(`${type}-signature-preview`).classList.remove('hidden');
+        }
+
+        // 사진 업로드 처리
+        document.getElementById('photo-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentPhoto = e.target.result;
+                const preview = document.getElementById('photo-preview');
+                preview.innerHTML = `<img src="${currentPhoto}" alt="장비 사진" />`;
+            };
+            reader.readAsDataURL(file);
+        });
+
         // 인수인계 완료 처리
         async function completeHandover() {
+            // 필수 필드 검증
+            const actualBorrower = document.getElementById('actual-borrower').value.trim();
+            const checkoutManager = document.getElementById('checkout-manager').value.trim();
+            const checkoutDatetime = document.getElementById('checkout-datetime').value;
+            
+            if (!actualBorrower) {
+                alert('실제 반출자 이름을 입력해주세요.');
+                return;
+            }
+            
+            if (!checkoutManager) {
+                alert('반출 확인 담당자 이름을 입력해주세요.');
+                return;
+            }
+            
+            if (!checkoutDatetime) {
+                alert('반출 일시를 선택해주세요.');
+                return;
+            }
+            
+            if (!borrowerSignature) {
+                alert('반출자 서명을 해주세요.');
+                return;
+            }
+            
+            if (!managerSignature) {
+                alert('반출 확인 담당자 서명을 해주세요.');
+                return;
+            }
+
             const equipmentId = getEquipmentId();
             const completeBtn = document.getElementById('complete-handover');
             
@@ -226,7 +544,7 @@
             completeBtn.disabled = true;
             completeBtn.innerHTML = '⏳ 처리 중...';
             
-            // 체크리스트 수집
+            // 데이터 수집
             const checklist = {
                 appearance: document.getElementById('check-appearance').checked,
                 function: document.getElementById('check-function').checked,
@@ -234,21 +552,35 @@
                 manual: document.getElementById('check-manual').checked
             };
             
-            // 메모 수집
-            const memo = document.getElementById('memo-text').value;
+            const handoverData = {
+                action: 'complete_handover',
+                equipment_id: equipmentId,
+                equipment_data: currentEquipmentData,
+                applicant: {
+                    name: document.getElementById('applicant-name').value,
+                    department: document.getElementById('applicant-department').value,
+                    application_date: document.getElementById('application-date').value
+                },
+                actual_checkout: {
+                    borrower: actualBorrower,
+                    manager: checkoutManager,
+                    datetime: checkoutDatetime
+                },
+                checklist: checklist,
+                memo: document.getElementById('memo-text').value.trim(),
+                photo: currentPhoto,
+                signatures: {
+                    borrower: borrowerSignature,
+                    manager: managerSignature
+                },
+                timestamp: new Date().toISOString()
+            };
             
             try {
                 const response = await fetch(HANDOVER_COMPLETE_WEBHOOK, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        action: 'complete_handover',
-                        equipment_id: equipmentId,
-                        equipment_data: currentEquipmentData,
-                        checklist: checklist,
-                        memo: memo,
-                        timestamp: new Date().toISOString()
-                    })
+                    body: JSON.stringify(handoverData)
                 });
 
                 if (response.ok) {
