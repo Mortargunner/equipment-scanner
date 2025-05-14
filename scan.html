@@ -282,7 +282,6 @@
         // 웹훅 URL 설정
         const EQUIPMENT_INFO_WEBHOOK = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
         const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae';
-    
         
         let currentEquipmentData = null;
         let isDrawing = false;
@@ -593,11 +592,23 @@
                 },
                 checklist: checklist,
                 memo: document.getElementById('memo-text').value.trim(),
-                // 이미지를 별도 프로퍼티로 전송
+                // 이미지를 Blob으로 변환하여 전송
                 images: {
-                    photo: currentPhoto,
-                    borrower_signature: borrowerSignature,
-                    manager_signature: managerSignature
+                    photo: currentPhoto ? {
+                        data: currentPhoto.split(',')[1], // Base64 데이터 부분만
+                        filename: `equipment_photo_${Date.now()}.jpg`,
+                        mimetype: 'image/jpeg'
+                    } : null,
+                    borrower_signature: borrowerSignature ? {
+                        data: borrowerSignature.split(',')[1],
+                        filename: `borrower_signature_${Date.now()}.png`,
+                        mimetype: 'image/png'
+                    } : null,
+                    manager_signature: managerSignature ? {
+                        data: managerSignature.split(',')[1],
+                        filename: `manager_signature_${Date.now()}.png`,
+                        mimetype: 'image/png'
+                    } : null
                 },
                 timestamp: new Date().toISOString()
             };
