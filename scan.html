@@ -3,27 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>장비 QR 스캔</title>
+    <title>장비 인수인계</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             max-width: 600px;
-            margin: 50px auto;
+            margin: 20px auto;
             padding: 20px;
-            text-align: center;
             background-color: #f5f5f5;
         }
-        .container {
+        .screen {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .status {
-            font-size: 18px;
-            margin: 20px 0;
+        .hidden { display: none; }
+        .equipment-info {
+            background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
+            margin: 15px 0;
+        }
+        .checklist-section {
+            margin: 20px 0;
+        }
+        .checklist-section label {
+            display: block;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .checklist-section input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        .photo-section, .memo-section {
+            margin: 20px 0;
+        }
+        textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .complete-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .complete-btn:hover {
+            background-color: #0056b3;
+        }
+        .complete-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
         }
         .spinner {
             border: 4px solid #f3f3f3;
@@ -38,112 +84,197 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .success { 
-            background-color: #d4edda; 
-            color: #155724; 
-            border: 1px solid #c3e6cb;
-        }
-        .error { 
-            background-color: #f8d7da; 
-            color: #721c24; 
-            border: 1px solid #f5c6cb;
-        }
-        .processing {
-            background-color: #e2e3e5;
-            color: #383d41;
-            border: 1px solid #d3d6d8;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏷️ 장비 QR 스캔</h1>
-        <div id="status" class="status processing">
-            <div class="spinner"></div>
-            처리 중입니다...
-        </div>
-        <div id="equipment-info" style="display: none;">
+    <!-- 1단계: 로딩 화면 -->
+    <div id="loading-screen" class="screen">
+        <h2>🔄 장비 정보 확인 중...</h2>
+        <div class="spinner"></div>
+        <p>잠시만 기다려주세요.</p>
+    </div>
+
+    <!-- 2단계: 인수인계 폼 -->
+    <div id="handover-form" class="screen hidden">
+        <h2 id="form-title">📋 장비 대여 인계서</h2>
+        
+        <!-- 장비 정보 -->
+        <div class="equipment-info">
             <h3>📦 장비 정보</h3>
-            <p><strong>장비 ID:</strong> <span id="equipment-id"></span></p>
+            <p><strong>장비명:</strong> <span id="equipment-name">-</span></p>
+            <p><strong>장비 ID:</strong> <span id="equipment-id-display">-</span></p>
+            <p><strong>카테고리:</strong> <span id="equipment-category">-</span></p>
+            <p><strong>현재 상태:</strong> <span id="equipment-status">-</span></p>
         </div>
+        
+        <!-- 점검 체크리스트 -->
+        <div class="checklist-section">
+            <h3>✅ 점검 사항</h3>
+            <label><input type="checkbox" id="check-appearance"> 외관 상태 양호</label>
+            <label><input type="checkbox" id="check-function"> 동작 정상 확인</label>
+            <label><input type="checkbox" id="check-accessories"> 액세서리 완전</label>
+            <label><input type="checkbox" id="check-manual"> 설명서 포함</label>
+        </div>
+        
+        <!-- 사진 업로드 -->
+        <div class="photo-section">
+            <h3>📸 사진 기록</h3>
+            <input type="file" id="photo-upload" accept="image/*" capture="environment">
+            <div id="photo-preview"></div>
+        </div>
+        
+        <!-- 특이사항 메모 -->
+        <div class="memo-section">
+            <h3>💬 특이사항</h3>
+            <textarea id="memo-text" placeholder="특이사항을 입력하세요..."></textarea>
+        </div>
+        
+        <!-- 완료 버튼 -->
+        <button id="complete-handover" class="complete-btn">
+            <span id="complete-btn-text">✅ 대여 완료</span>
+        </button>
+    </div>
+
+    <!-- 3단계: 완료 화면 -->
+    <div id="completion-screen" class="screen hidden">
+        <h2 class="success">✅ 인수인계 완료!</h2>
+        <p>성공적으로 처리되었습니다.</p>
+        <p>Notion에서 인수인계 기록을 확인할 수 있습니다.</p>
     </div>
 
     <script>
+        // 웹훅 URL 설정 (1단계에서 복사한 URL로 교체)
+        const EQUIPMENT_INFO_WEBHOOK = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
+        const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
+        
+        let currentEquipmentData = null;
+
         // URL에서 장비 ID 추출
         function getEquipmentId() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('id');
         }
 
-        // 상태 업데이트 함수
-        function updateStatus(message, type = 'processing') {
-            const statusDiv = document.getElementById('status');
-            statusDiv.className = 'status ' + type;
-            statusDiv.innerHTML = message;
-        }
-
-        // 장비 정보 표시
-        function showEquipmentInfo(equipmentId) {
-            document.getElementById('equipment-id').textContent = equipmentId;
-            document.getElementById('equipment-info').style.display = 'block';
-        }
-
-        // Make.com 웹훅 호출
-        async function processEquipmentScan() {
+        // 장비 정보 로드
+        async function loadEquipmentInfo() {
             const equipmentId = getEquipmentId();
             
             if (!equipmentId) {
-                updateStatus('❌ 장비 ID를 찾을 수 없습니다.<br><small>QR 코드를 다시 스캔해주세요.</small>', 'error');
+                showError('장비 ID를 찾을 수 없습니다.');
                 return;
             }
 
-            showEquipmentInfo(equipmentId);
-            updateStatus('🔄 장비 정보를 처리하고 있습니다...', 'processing');
-
             try {
-                // TODO: 여기에 실제 Make.com 웹훅 URL 입력 필요
-                const webhookUrl = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
-                
-                const response = await fetch(webhookUrl, {
+                const response = await fetch(EQUIPMENT_INFO_WEBHOOK, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
+                        action: 'get_equipment_info',
+                        equipment_id: equipmentId
+                    })
+                });
+
+                const equipmentData = await response.json();
+                
+                if (equipmentData.success) {
+                    currentEquipmentData = equipmentData;
+                    displayEquipmentInfo(equipmentData);
+                    showHandoverForm();
+                } else {
+                    throw new Error('장비 정보를 찾을 수 없습니다.');
+                }
+            } catch (error) {
+                showError('장비 정보 로드 실패: ' + error.message);
+            }
+        }
+
+        // 장비 정보 화면에 표시
+        function displayEquipmentInfo(data) {
+            document.getElementById('equipment-name').textContent = data.name || '-';
+            document.getElementById('equipment-id-display').textContent = data.id || '-';
+            document.getElementById('equipment-category').textContent = data.category || '-';
+            document.getElementById('equipment-status').textContent = data.status || '-';
+            
+            // 대여/반납 상태에 따라 제목과 버튼 텍스트 변경
+            if (data.status === '장비 대여중') {
+                document.getElementById('form-title').textContent = '📋 장비 반납 접수서';
+                document.getElementById('complete-btn-text').textContent = '✅ 반납 완료';
+            }
+        }
+
+        // 인수인계 폼 표시
+        function showHandoverForm() {
+            document.getElementById('loading-screen').classList.add('hidden');
+            document.getElementById('handover-form').classList.remove('hidden');
+        }
+
+        // 에러 표시
+        function showError(message) {
+            document.getElementById('loading-screen').innerHTML = 
+                `<h2 class="error">❌ 오류</h2><p>${message}</p>
+                 <button onclick="window.location.reload()" class="complete-btn">다시 시도</button>`;
+        }
+
+        // 인수인계 완료 처리
+        async function completeHandover() {
+            const equipmentId = getEquipmentId();
+            const completeBtn = document.getElementById('complete-handover');
+            
+            // 버튼 비활성화
+            completeBtn.disabled = true;
+            completeBtn.innerHTML = '⏳ 처리 중...';
+            
+            // 체크리스트 수집
+            const checklist = {
+                appearance: document.getElementById('check-appearance').checked,
+                function: document.getElementById('check-function').checked,
+                accessories: document.getElementById('check-accessories').checked,
+                manual: document.getElementById('check-manual').checked
+            };
+            
+            // 메모 수집
+            const memo = document.getElementById('memo-text').value;
+            
+            try {
+                const response = await fetch(HANDOVER_COMPLETE_WEBHOOK, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: 'complete_handover',
                         equipment_id: equipmentId,
-                        scan_timestamp: new Date().toISOString(),
-                        user_agent: navigator.userAgent,
-                        source: 'qr_scan',
-                        page_url: window.location.href
+                        equipment_data: currentEquipmentData,
+                        checklist: checklist,
+                        memo: memo,
+                        timestamp: new Date().toISOString()
                     })
                 });
 
                 if (response.ok) {
-                    updateStatus('✅ 스캔 완료!<br>💡 인수인계 페이지가 Notion에 생성되었습니다.<br><small>담당자가 확인 후 연락드릴 예정입니다.</small>', 'success');
+                    showCompletionScreen();
                 } else {
-                    throw new Error(`서버 오류 (${response.status})`);
+                    throw new Error('서버 응답 오류');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                updateStatus(`❌ 처리 중 오류가 발생했습니다.<br><small>${error.message}</small><br><button onclick="window.location.reload()">🔄 다시 시도</button>`, 'error');
+                alert('인수인계 처리 중 오류가 발생했습니다: ' + error.message);
+                // 버튼 다시 활성화
+                completeBtn.disabled = false;
+                completeBtn.innerHTML = document.getElementById('complete-btn-text').textContent;
             }
         }
 
-        // 페이지 로드시 자동 실행
-        window.addEventListener('load', processEquipmentScan);
+        // 완료 화면 표시
+        function showCompletionScreen() {
+            document.getElementById('handover-form').classList.add('hidden');
+            document.getElementById('completion-screen').classList.remove('hidden');
+        }
+
+        // 페이지 로드시 실행
+        window.addEventListener('load', loadEquipmentInfo);
+        
+        // 완료 버튼 이벤트 리스너
+        document.getElementById('complete-handover').addEventListener('click', completeHandover);
     </script>
 </body>
 </html>
