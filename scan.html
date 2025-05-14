@@ -281,7 +281,7 @@
     <script>
         // 웹훅 URL 설정
         const EQUIPMENT_INFO_WEBHOOK = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
-        const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae';
+        const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae'';
         
         let currentEquipmentData = null;
         let isDrawing = false;
@@ -464,7 +464,54 @@
             e.target.dispatchEvent(mouseEvent);
         }
 
-        function clearSignature(type) {
+        // Base64를 실제 파일로 변환하는 함수
+        function base64ToBlob(base64String, mimeType) {
+            const base64Data = base64String.split(',')[1];
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: mimeType });
+        }
+
+        // 파일을 FormData로 전송하는 함수
+        async function uploadToMake(handoverData) {
+            const formData = new FormData();
+            
+            // 기본 JSON 데이터
+            formData.append('data', JSON.stringify({
+                action: 'complete_handover',
+                equipment_id: handoverData.equipment_id,
+                equipment_data: handoverData.equipment_data,
+                applicant: handoverData.applicant,
+                actual_checkout: handoverData.actual_checkout,
+                checklist: handoverData.checklist,
+                memo: handoverData.memo,
+                timestamp: handoverData.timestamp
+            }));
+            
+            // 이미지 파일들을 실제 Blob으로 첨부
+            if (currentPhoto) {
+                const photoBlob = base64ToBlob(currentPhoto, 'image/jpeg');
+                formData.append('equipment_photo', photoBlob, 'equipment_photo.jpg');
+            }
+            
+            if (borrowerSignature) {
+                const borrowerBlob = base64ToBlob(borrowerSignature, 'image/png');
+                formData.append('borrower_signature', borrowerBlob, 'borrower_signature.png');
+            }
+            
+            if (managerSignature) {
+                const managerBlob = base64ToBlob(managerSignature, 'image/png');
+                formData.append('manager_signature', managerBlob, 'manager_signature.png');
+            }
+            
+            return formData;
+        }
             const canvas = document.getElementById(`${type}-signature-canvas`);
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
