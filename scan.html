@@ -281,7 +281,8 @@
     <script>
         // 웹훅 URL 설정
         const EQUIPMENT_INFO_WEBHOOK = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
-        const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae'';
+        const HANDOVER_COMPLETE_WEBHOOK = ''https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae';
+        const FILE_UPLOAD_WEBHOOK = 'https://hook.eu2.make.com/yy5cypdlbzbgruwb44xoro477bampfdc';  // 파일 전용 웹훅
         
         let currentEquipmentData = null;
         let isDrawing = false;
@@ -291,6 +292,7 @@
         let borrowerSignature = null;
         let managerSignature = null;
         let activeCanvas = null;
+        let handoverRecordId = null;  // 생성된 레코드 ID 저장
 
         // URL에서 장비 ID 추출
         function getEquipmentId() {
@@ -464,7 +466,21 @@
             e.target.dispatchEvent(mouseEvent);
         }
 
-        // Base64를 실제 파일로 변환하는 함수
+        // 파일 업로드 함수
+        async function uploadFile(file, filename, folderId, type) {
+            const formData = new FormData();
+            formData.append('file', file, filename);
+            formData.append('folder_id', folderId);
+            formData.append('file_type', type);
+            formData.append('equipment_id', getEquipmentId());
+            
+            const response = await fetch(FILE_UPLOAD_WEBHOOK, {
+                method: 'POST',
+                body: formData
+            });
+            
+            return response.json();
+        }
         function base64ToBlob(base64String, mimeType) {
             const base64Data = base64String.split(',')[1];
             const byteCharacters = atob(base64Data);
@@ -538,8 +554,8 @@
             document.getElementById(`${type}-signature-preview`).classList.remove('hidden');
         }
 
-        // 이미지 압축 함수
-        function resizeImage(file, maxWidth = 800, quality = 0.7) {
+        // 이미지 압축 함수 (더 강한 압축)
+        function resizeImage(file, maxWidth = 600, quality = 0.5) {
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
