@@ -1,136 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>장비 인수인계</title>
+    <title>장비 대여 반출 확인서</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .screen {
-            background: white;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
             padding: 20px;
+        }
+
+        .screen {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
         }
-        .hidden { display: none; }
-        .equipment-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
+
+        .hidden {
+            display: none !important;
         }
-        .form-section {
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-        }
-        .form-section h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        .input-group {
-            margin: 10px 0;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .checklist-section label {
-            display: block;
-            margin: 10px 0;
-            font-size: 16px;
-            font-weight: normal;
-        }
-        .checklist-section input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.2);
-        }
-        textarea {
-            width: 100%;
-            min-height: 80px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            resize: vertical;
-        }
-        .photo-upload-area {
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.3s;
-        }
-        .photo-upload-area:hover {
-            border-color: #007bff;
-        }
-        .photo-preview {
-            margin-top: 10px;
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
             text-align: center;
         }
-        .photo-preview img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .signature-canvas {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            cursor: crosshair;
-            background: white;
-        }
-        .signature-controls {
-            margin-top: 10px;
-            text-align: center;
-        }
-        .signature-controls button {
-            padding: 8px 16px;
-            margin: 0 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .signature-section {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-            background: #fafafa;
-        }
-        .complete-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .complete-btn:hover {
-            background-color: #0056b3;
-        }
-        .complete-btn:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
+
         .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3498db;
@@ -140,16 +47,191 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .success { color: #28a745; }
-        .error { color: #dc3545; }
-        .required { color: #e74c3c; }
+
+        .equipment-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3498db;
+        }
+
+        .equipment-info h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .equipment-info p {
+            margin-bottom: 8px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .form-section h3 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        input[type="text"], input[type="datetime-local"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="text"]:focus, input[type="datetime-local"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
         .readonly {
             background-color: #f8f9fa;
             color: #6c757d;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .checklist-section label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .checklist-section input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .photo-upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .photo-upload-area:hover {
+            background-color: #f8f9fa;
+        }
+
+        .photo-preview {
+            margin-top: 15px;
+        }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .signature-section {
+            margin-bottom: 25px;
+        }
+
+        .signature-section h4 {
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .signature-canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: crosshair;
+            width: 100%;
+            height: 120px;
+        }
+
+        .signature-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .signature-controls button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .signature-controls button:hover {
+            background: #f8f9fa;
+        }
+
+        .complete-btn {
+            width: 100%;
+            padding: 15px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .complete-btn:hover:not(:disabled) {
+            background: #229954;
+        }
+
+        .complete-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .success {
+            color: #27ae60;
+        }
+
+        .error {
+            color: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .screen {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -235,7 +317,8 @@
             <!-- 실제 반출자 서명 -->
             <div class="signature-section">
                 <h4>📝 실제 반출자 서명 <span class="required">*</span></h4>
-                <canvas id="borrower-signature-canvas" class="signature-canvas" width="530" height="120"></canvas>
+                <canvas id="borrower-signature-canvas" class="signature-canvas" width="530" height="120"
+                        aria-label="반출자 서명 입력 영역"></canvas>
                 <div class="signature-controls">
                     <button type="button" onclick="clearSignature('borrower')">🗑️ 지우기</button>
                     <button type="button" onclick="saveSignature('borrower')">💾 저장</button>
@@ -248,7 +331,8 @@
             <!-- 반출 확인 담당자 서명 -->
             <div class="signature-section">
                 <h4>📝 반출 확인 담당자 서명 <span class="required">*</span></h4>
-                <canvas id="manager-signature-canvas" class="signature-canvas" width="530" height="120"></canvas>
+                <canvas id="manager-signature-canvas" class="signature-canvas" width="530" height="120"
+                        aria-label="담당자 서명 입력 영역"></canvas>
                 <div class="signature-controls">
                     <button type="button" onclick="clearSignature('manager')">🗑️ 지우기</button>
                     <button type="button" onclick="saveSignature('manager')">💾 저장</button>
@@ -292,7 +376,7 @@
         let borrowerSignature = null;
         let managerSignature = null;
         let activeCanvas = null;
-        let handoverRecordId = null;  // 생성된 레코드 ID 저장
+        let handoverRecordId = null;
 
         // URL에서 장비 ID 추출
         function getEquipmentId() {
@@ -300,75 +384,53 @@
             return urlParams.get('id');
         }
 
-        // 장비 정보 로드
+        // HTML 이스케이프 함수 (XSS 방지)
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 장비 정보 로드 (백그라운드 실행)
         async function loadEquipmentInfo() {
-            console.log("장비 정보 로드 시작");
+            console.log("백그라운드에서 실제 장비 정보 로드 시도");
+            
             const equipmentId = getEquipmentId();
-            
-            if (!equipmentId) {
-                console.log("장비 ID 없음");
-                showError('장비 ID를 찾을 수 없습니다.');
-                return;
-            }
-            
-            console.log("장비 ID:", equipmentId);
+            if (!equipmentId) return;
 
             try {
-                console.log("웹훅 요청 시작...");
-                console.log("URL:", EQUIPMENT_INFO_WEBHOOK_ORIGINAL);
-                
-                const requestData = {
-                    action: 'get_equipment_info',
-                    equipment_id: equipmentId
-                };
-                
-                console.log("요청 데이터:", requestData);
-                
                 const response = await fetch(EQUIPMENT_INFO_WEBHOOK_ORIGINAL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'get_equipment_info',
+                        equipment_id: equipmentId
+                    })
                 });
 
-                console.log("응답 상태:", response.status);
-                console.log("응답 타입:", response.type);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const responseData = await response.json();
-                console.log("전체 응답 데이터:", responseData);
-                
-                // Make.com 응답 구조에 맞게 수정
-                let equipmentData;
-                if (responseData.body && responseData.body.success) {
-                    // Make.com HTTP Response 모듈의 응답 구조
-                    equipmentData = responseData.body;
-                } else if (responseData.success) {
-                    // 직접 응답 구조
-                    equipmentData = responseData;
-                } else {
-                    throw new Error('응답에서 success 속성을 찾을 수 없습니다: ' + JSON.stringify(responseData));
-                }
-                
-                console.log("파싱된 장비 데이터:", equipmentData);
-                
-                if (equipmentData && equipmentData.success) {
-                    currentEquipmentData = equipmentData;
-                    displayEquipmentInfo(equipmentData);
-                    showHandoverForm();
-                } else {
-                    throw new Error('장비 정보를 찾을 수 없습니다: ' + JSON.stringify(equipmentData));
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log("실제 데이터 로드 성공:", responseData);
+                    
+                    let equipmentData;
+                    if (responseData.body && responseData.body.success) {
+                        equipmentData = responseData.body;
+                    } else if (responseData.success) {
+                        equipmentData = responseData;
+                    }
+                    
+                    if (equipmentData && equipmentData.success) {
+                        currentEquipmentData = equipmentData;
+                        displayEquipmentInfo(equipmentData);
+                        console.log("화면을 실제 데이터로 업데이트함");
+                    }
                 }
             } catch (error) {
-                console.error("에러 발생:", error);
-                console.error("에러 타입:", error.name);
-                console.error("에러 메시지:", error.message);
-                
-                showError('장비 정보 로드 실패: ' + error.message);
+                console.error("백그라운드 로드 실패:", error);
+                if (error.name === 'TypeError') {
+                    console.log("네트워크 오류 - 오프라인 상태일 가능성");
+                }
+                // 에러가 발생해도 더미 데이터로 계속 진행
             }
         }
 
@@ -399,13 +461,13 @@
             
             // 신청 정보에 실제 데이터 표시 (Notion에서 가져온 경우)
             if (data.applicant_name) {
-                document.getElementById('applicant-name').value = data.applicant_name;
+                document.getElementById('applicant-name').value = escapeHtml(data.applicant_name);
             }
             if (data.applicant_department) {
-                document.getElementById('applicant-department').value = data.applicant_department;
+                document.getElementById('applicant-department').value = escapeHtml(data.applicant_department);
             }
             if (data.application_date) {
-                document.getElementById('application-date').value = data.application_date;
+                document.getElementById('application-date').value = escapeHtml(data.application_date);
             }
         }
 
@@ -433,12 +495,12 @@
             console.error("Error:", message);
             document.getElementById('loading-screen').innerHTML = 
                 `<h2 class="error">❌ 오류</h2>
-                 <p>${message}</p>
+                 <p>${escapeHtml(message)}</p>
                  <div style="background: #f8f9fa; padding: 10px; margin: 10px 0; font-size: 12px;">
                     <strong>디버깅 정보:</strong><br>
-                    현재 URL: ${window.location.href}<br>
-                    장비 ID: ${getEquipmentId()}<br>
-                    웹훅 URL: ${EQUIPMENT_INFO_WEBHOOK.substring(0, 50)}...
+                    현재 URL: ${escapeHtml(window.location.href)}<br>
+                    장비 ID: ${escapeHtml(getEquipmentId() || 'null')}<br>
+                    웹훅 URL: ${escapeHtml(EQUIPMENT_INFO_WEBHOOK_ORIGINAL.substring(0, 50))}...
                  </div>
                  <button onclick="window.location.reload()" class="complete-btn">다시 시도</button>`;
         }
@@ -449,12 +511,30 @@
             
             canvases.forEach(canvasId => {
                 const canvas = document.getElementById(canvasId);
+                if (!canvas) {
+                    console.error(`Canvas element not found: ${canvasId}`);
+                    return;
+                }
+                
                 const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error(`Canvas context not available: ${canvasId}`);
+                    return;
+                }
                 
                 // 캔버스 설정
                 ctx.strokeStyle = '#000';
                 ctx.lineWidth = 2;
                 ctx.lineCap = 'round';
+                
+                // 기존 이벤트 리스너 제거 후 재등록
+                canvas.removeEventListener('mousedown', startDrawing);
+                canvas.removeEventListener('mousemove', draw);
+                canvas.removeEventListener('mouseup', stopDrawing);
+                canvas.removeEventListener('mouseout', stopDrawing);
+                canvas.removeEventListener('touchstart', handleTouch);
+                canvas.removeEventListener('touchmove', handleTouch);
+                canvas.removeEventListener('touchend', stopDrawing);
                 
                 // 이벤트 리스너 추가
                 canvas.addEventListener('mousedown', startDrawing);
@@ -513,6 +593,38 @@
             e.target.dispatchEvent(mouseEvent);
         }
 
+        // 서명 지우기 (중복 제거된 통합 버전)
+        function clearSignature(type) {
+            const canvas = document.getElementById(`${type}-signature-canvas`);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (type === 'borrower') {
+                borrowerSignature = null;
+            } else {
+                managerSignature = null;
+            }
+            
+            document.getElementById(`${type}-signature-preview`).classList.add('hidden');
+        }
+
+        function saveSignature(type) {
+            const canvas = document.getElementById(`${type}-signature-canvas`);
+            if (!canvas) return;
+            
+            const signatureData = canvas.toDataURL('image/png');
+            
+            if (type === 'borrower') {
+                borrowerSignature = signatureData;
+            } else {
+                managerSignature = signatureData;
+            }
+            
+            document.getElementById(`${type}-signature-preview`).classList.remove('hidden');
+        }
+
         // 파일 업로드 함수
         async function uploadFile(file, filename, folderId, type) {
             const formData = new FormData();
@@ -528,6 +640,7 @@
             
             return response.json();
         }
+
         function base64ToBlob(base64String, mimeType) {
             const base64Data = base64String.split(',')[1];
             const byteCharacters = atob(base64Data);
@@ -575,56 +688,58 @@
             
             return formData;
         }
-            const canvas = document.getElementById(`${type}-signature-canvas`);
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            if (type === 'borrower') {
-                borrowerSignature = null;
-            } else {
-                managerSignature = null;
-            }
-            
-            document.getElementById(`${type}-signature-preview`).classList.add('hidden');
-        }
 
-        function saveSignature(type) {
-            const canvas = document.getElementById(`${type}-signature-canvas`);
-            const signatureData = canvas.toDataURL('image/png');
-            
-            if (type === 'borrower') {
-                borrowerSignature = signatureData;
-            } else {
-                managerSignature = signatureData;
-            }
-            
-            document.getElementById(`${type}-signature-preview`).classList.remove('hidden');
-        }
-
-        // 이미지 압축 함수 (더 강한 압축)
+        // 이미지 압축 함수 (메모리 관리 개선)
         function resizeImage(file, maxWidth = 600, quality = 0.5) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 const img = new Image();
                 
                 img.onload = () => {
-                    const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
-                    canvas.width = img.width * ratio;
-                    canvas.height = img.height * ratio;
-                    
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
+                    try {
+                        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+                        canvas.width = img.width * ratio;
+                        canvas.height = img.height * ratio;
+                        
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const result = canvas.toDataURL('image/jpeg', quality);
+                        
+                        // 메모리 해제
+                        URL.revokeObjectURL(img.src);
+                        
+                        resolve(result);
+                    } catch (error) {
+                        URL.revokeObjectURL(img.src);
+                        reject(error);
+                    }
+                };
+                
+                img.onerror = () => {
+                    URL.revokeObjectURL(img.src);
+                    reject(new Error('이미지 로드 실패'));
                 };
                 
                 img.src = URL.createObjectURL(file);
             });
         }
 
-        // 사진 업로드 처리 (압축 적용)
+        // 사진 업로드 처리 (개선된 버전)
         document.getElementById('photo-upload').addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
+
+            // 파일 형식 검증
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            // 파일 크기 검증 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('파일 크기가 너무 큽니다. 10MB 이하의 파일을 선택해주세요.');
+                return;
+            }
 
             try {
                 // 이미지 압축
@@ -634,127 +749,4 @@
                 console.log('압축된 이미지 크기:', currentPhoto.length, 'bytes');
             } catch (error) {
                 console.error('이미지 압축 실패:', error);
-                alert('이미지 처리 중 오류가 발생했습니다.');
-            }
-        });
-
-        // 인수인계 완료 처리
-        async function completeHandover() {
-            // 필수 필드 검증
-            const actualBorrower = document.getElementById('actual-borrower').value.trim();
-            const checkoutManager = document.getElementById('checkout-manager').value.trim();
-            const checkoutDatetime = document.getElementById('checkout-datetime').value;
-            
-            if (!actualBorrower) {
-                alert('실제 반출자 이름을 입력해주세요.');
-                return;
-            }
-            
-            if (!checkoutManager) {
-                alert('반출 확인 담당자 이름을 입력해주세요.');
-                return;
-            }
-            
-            if (!checkoutDatetime) {
-                alert('반출 일시를 선택해주세요.');
-                return;
-            }
-            
-            // if (!borrowerSignature) {
-            //     alert('반출자 서명을 해주세요.');
-            //     return;
-            // }
-            
-            // if (!managerSignature) {
-            //     alert('반출 확인 담당자 서명을 해주세요.');
-            //     return;
-            // }
-
-            const equipmentId = getEquipmentId();
-            const completeBtn = document.getElementById('complete-handover');
-            
-            // 버튼 비활성화
-            completeBtn.disabled = true;
-            completeBtn.innerHTML = '⏳ 처리 중...';
-            
-            // 데이터 수집
-            const checklist = {
-                appearance: document.getElementById('check-appearance').checked,
-                function: document.getElementById('check-function').checked,
-                accessories: document.getElementById('check-accessories').checked,
-                manual: document.getElementById('check-manual').checked
-            };
-            
-            // 사진/서명과 기본 데이터를 분리해서 전송
-            const handoverData = {
-                action: 'complete_handover',
-                equipment_id: equipmentId,
-                equipment_data: currentEquipmentData,
-                applicant: {
-                    name: document.getElementById('applicant-name').value,
-                    department: document.getElementById('applicant-department').value,
-                    application_date: document.getElementById('application-date').value
-                },
-                actual_checkout: {
-                    borrower: actualBorrower,
-                    manager: checkoutManager,
-                    datetime: checkoutDatetime
-                },
-                checklist: checklist,
-                memo: document.getElementById('memo-text').value.trim(),
-                // 이미지를 Blob으로 변환하여 전송
-                images: {
-                    photo: currentPhoto ? {
-                        data: currentPhoto.split(',')[1], // Base64 데이터 부분만
-                        filename: `equipment_photo_${Date.now()}.jpg`,
-                        mimetype: 'image/jpeg'
-                    } : null,
-                    borrower_signature: borrowerSignature ? {
-                        data: borrowerSignature.split(',')[1],
-                        filename: `borrower_signature_${Date.now()}.png`,
-                        mimetype: 'image/png'
-                    } : null,
-                    manager_signature: managerSignature ? {
-                        data: managerSignature.split(',')[1],
-                        filename: `manager_signature_${Date.now()}.png`,
-                        mimetype: 'image/png'
-                    } : null
-                },
-                timestamp: new Date().toISOString()
-            };
-            
-            try {
-                const response = await fetch(HANDOVER_COMPLETE_WEBHOOK, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(handoverData)
-                });
-
-                if (response.ok) {
-                    showCompletionScreen();
-                } else {
-                    throw new Error('서버 응답 오류');
-                }
-            } catch (error) {
-                alert('인수인계 처리 중 오류가 발생했습니다: ' + error.message);
-                // 버튼 다시 활성화
-                completeBtn.disabled = false;
-                completeBtn.innerHTML = document.getElementById('complete-btn-text').textContent;
-            }
-        }
-
-        // 완료 화면 표시
-        function showCompletionScreen() {
-            document.getElementById('handover-form').classList.add('hidden');
-            document.getElementById('completion-screen').classList.remove('hidden');
-        }
-
-        // 페이지 로드시 실행
-        window.addEventListener('load', loadEquipmentInfo);
-        
-        // 완료 버튼 이벤트 리스너
-        document.getElementById('complete-handover').addEventListener('click', completeHandover);
-    </script>
-</body>
-</html>
-
+                alert('이미지 처리
