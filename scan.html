@@ -282,7 +282,7 @@
         // 웹훅 URL 설정
         const EQUIPMENT_INFO_WEBHOOK = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
         const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae';
-        const FILE_UPLOAD_WEBHOOK = 'https://hook.eu2.make.com/yy5cypdlbzbgruwb44xoro477bampfdc';  // 파일 전용 웹훅
+        const FILE_UPLOAD_WEBHOOK = 'https://hook.eu2.make.com/yy5cypdlbzbgruwb44xoro477bampfdc';
         
         let currentEquipmentData = null;
         let isDrawing = false;
@@ -315,29 +315,53 @@
 
             try {
                 console.log("웹훅 요청 시작...");
+                console.log("URL:", EQUIPMENT_INFO_WEBHOOK);
+                
+                const requestData = {
+                    action: 'get_equipment_info',
+                    equipment_id: equipmentId
+                };
+                
+                console.log("요청 데이터:", requestData);
+                
                 const response = await fetch(EQUIPMENT_INFO_WEBHOOK, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        action: 'get_equipment_info',
-                        equipment_id: equipmentId
-                    })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
                 });
 
-                console.log("응답 받음, 파싱 중...");
+                console.log("응답 상태:", response.status);
+                console.log("응답 타입:", response.type);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const equipmentData = await response.json();
                 console.log("응답 데이터:", equipmentData);
                 
-                if (equipmentData.success) {
+                if (equipmentData && equipmentData.success) {
                     currentEquipmentData = equipmentData;
                     displayEquipmentInfo(equipmentData);
                     showHandoverForm();
                 } else {
-                    throw new Error('장비 정보를 찾을 수 없습니다.');
+                    throw new Error('장비 정보를 찾을 수 없습니다: ' + JSON.stringify(equipmentData));
                 }
             } catch (error) {
                 console.error("에러 발생:", error);
-                showError('장비 정보 로드 실패: ' + error.message);
+                console.error("에러 타입:", error.name);
+                console.error("에러 메시지:", error.message);
+                
+                // CORS 오류인 경우 특별한 처리
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    showError('CORS 오류: 네트워크 연결을 확인하세요.\n' + 
+                             '브라우저 콘솔에서 자세한 오류를 확인할 수 있습니다.\n' +
+                             'Make.com 시나리오가 활성화되어 있는지 확인하세요.');
+                } else {
+                    showError('장비 정보 로드 실패: ' + error.message);
+                }
             }
         }
 
