@@ -279,10 +279,13 @@
     </div>
 
     <script>
-        // 웹훅 URL 설정
-        const EQUIPMENT_INFO_WEBHOOK = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
+        // 웹훅 URL 설정 (CORS 문제 임시 해결)
+        const EQUIPMENT_INFO_WEBHOOK_ORIGINAL = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
         const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae';
         const FILE_UPLOAD_WEBHOOK = 'https://hook.eu2.make.com/yy5cypdlbzbgruwb44xoro477bampfdc';
+        
+        // CORS 프록시를 통한 우회 (임시 해결책)
+        const EQUIPMENT_INFO_WEBHOOK = `https://api.allorigins.win/raw?url=${encodeURIComponent(EQUIPMENT_INFO_WEBHOOK_ORIGINAL)}`;
         
         let currentEquipmentData = null;
         let isDrawing = false;
