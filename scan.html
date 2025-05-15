@@ -279,13 +279,10 @@
     </div>
 
     <script>
-        // 웹훅 URL 설정 (CORS 문제 임시 해결)
+        // 웹훅 URL 설정
         const EQUIPMENT_INFO_WEBHOOK_ORIGINAL = 'https://hook.eu2.make.com/hk5onxu80qbw7r7ryn6aks9sgvnbkvbr';
         const HANDOVER_COMPLETE_WEBHOOK = 'https://hook.eu2.make.com/0ugcw2dbfc2vefz0ba51ygu24jvq2vae';
         const FILE_UPLOAD_WEBHOOK = 'https://hook.eu2.make.com/yy5cypdlbzbgruwb44xoro477bampfdc';
-        
-        // CORS 프록시를 통한 우회 (임시 해결책)
-        const EQUIPMENT_INFO_WEBHOOK = `https://api.allorigins.win/raw?url=${encodeURIComponent(EQUIPMENT_INFO_WEBHOOK_ORIGINAL)}`;
         
         let currentEquipmentData = null;
         let isDrawing = false;
@@ -318,7 +315,7 @@
 
             try {
                 console.log("웹훅 요청 시작...");
-                console.log("URL:", EQUIPMENT_INFO_WEBHOOK);
+                console.log("URL:", EQUIPMENT_INFO_WEBHOOK_ORIGINAL);
                 
                 const requestData = {
                     action: 'get_equipment_info',
@@ -327,7 +324,7 @@
                 
                 console.log("요청 데이터:", requestData);
                 
-                const response = await fetch(EQUIPMENT_INFO_WEBHOOK, {
+                const response = await fetch(EQUIPMENT_INFO_WEBHOOK_ORIGINAL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -342,8 +339,22 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const equipmentData = await response.json();
-                console.log("응답 데이터:", equipmentData);
+                const responseData = await response.json();
+                console.log("전체 응답 데이터:", responseData);
+                
+                // Make.com 응답 구조에 맞게 수정
+                let equipmentData;
+                if (responseData.body && responseData.body.success) {
+                    // Make.com HTTP Response 모듈의 응답 구조
+                    equipmentData = responseData.body;
+                } else if (responseData.success) {
+                    // 직접 응답 구조
+                    equipmentData = responseData;
+                } else {
+                    throw new Error('응답에서 success 속성을 찾을 수 없습니다: ' + JSON.stringify(responseData));
+                }
+                
+                console.log("파싱된 장비 데이터:", equipmentData);
                 
                 if (equipmentData && equipmentData.success) {
                     currentEquipmentData = equipmentData;
@@ -357,14 +368,7 @@
                 console.error("에러 타입:", error.name);
                 console.error("에러 메시지:", error.message);
                 
-                // CORS 오류인 경우 특별한 처리
-                if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    showError('CORS 오류: 네트워크 연결을 확인하세요.\n' + 
-                             '브라우저 콘솔에서 자세한 오류를 확인할 수 있습니다.\n' +
-                             'Make.com 시나리오가 활성화되어 있는지 확인하세요.');
-                } else {
-                    showError('장비 정보 로드 실패: ' + error.message);
-                }
+                showError('장비 정보 로드 실패: ' + error.message);
             }
         }
 
